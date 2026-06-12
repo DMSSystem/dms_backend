@@ -1,0 +1,39 @@
+# --- Environment Variables & Secrets ---
+.env
+.env.*
+*.env
+secrets.json
+
+# --- Python & Virtual Environments ---
+venv/
+.venv/
+env/
+ENV/
+htmlcov/
+.tox/
+.pytest_cache/
+.mypy_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Django Specific ---
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+static_root/
+
+# --- IDEs & Code Editors ---
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
