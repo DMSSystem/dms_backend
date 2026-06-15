@@ -6,6 +6,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from decouple import config
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,8 +19,7 @@ AUTH_USER_MODEL = 'users.User'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']  # Add these
 
 
 # Application definition
@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'drf_spectacular',  # Add this for Swagger
-     'drf_spectacular_sidecar',  # Optional: for offline Swagger UI
+    'drf_spectacular_sidecar',  # Optional: for offline Swagger UI
     
     
     # Custom apps
@@ -51,6 +51,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -78,13 +79,24 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Dormitory Management System API',
     'DESCRIPTION': 'API for managing secondary school dormitories - leave requests, maintenance, duty rosters, inspections',
     'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
+    'SERVE_INCLUDE_SCHEMA': True,
     'COMPONENT_SPLIT_REQUEST': True,
     'SWAGGER_UI_SETTINGS': {
         'deepLinking': True,
         'persistAuthorization': True,  # Remember JWT token
         'displayOperationId': True,
     },
+    
+    'APPEND_COMPONENTS': {
+        'securitySchemes': {
+            'BearerAuth': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+            }
+        }
+    },
+    
     'TAGS': [
         {'name': 'Authentication', 'description': 'Login and token management'},
         {'name': 'Users', 'description': 'User management (Admin only)'},

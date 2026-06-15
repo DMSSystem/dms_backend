@@ -9,6 +9,13 @@ class Student(models.Model):
     full_name = models.CharField(max_length=100)
     admission_no = models.CharField(max_length=50, unique=True, db_index=True)
     room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, related_name='students')
+    parent = models.OneToOneField(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='child_student'
+    )
     
     class Meta:
         db_table = 'student'
