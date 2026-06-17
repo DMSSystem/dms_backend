@@ -14,14 +14,14 @@ class AuditLogAPITest(APITestCase):
         # Create users
         self.admin = User.objects.create_user(
             username='admin_al', email='admin_al@dms.com',
-            password='Admin@1234', role='admin'
+            password='Admin_al@1234', role='admin'
         )
         self.officer = User.objects.create_user(
             username='officer_al', email='officer_al@dms.com',
-            password='Officer@1234', role='officer'
+            password='Officer_al@1234', role='officer'
         )
         
-        self.list_url = reverse('auditlog-list')
+        self.list_url = reverse('audit-log-list')
 
     def _auth(self, user):
         res = self.client.post(reverse('token_obtain_pair'), {
@@ -47,8 +47,12 @@ class AuditLogAPITest(APITestCase):
         # Clear existing logs created during user setups if any
         AuditLog.objects.all().delete()
         
-        # Create a room
-        Room.objects.create(dorm_name='Kilimanjaro', room_number='999', capacity=4)
+        # Create a room via API to execute middleware and capture user
+        self.client.post(reverse('room-list'), {
+            'dorm_name': 'Kilimanjaro',
+            'room_number': '999',
+            'capacity': 4
+        })
         
         # Check if audit log was created
         logs = AuditLog.objects.filter(module='room', action='CREATE')

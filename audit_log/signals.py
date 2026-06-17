@@ -102,7 +102,7 @@ def model_post_delete(sender, instance, **kwargs):
 @receiver(user_logged_in)
 def log_user_login(sender, request, user, **kwargs):
     ip_addr = None
-    if request:
+    if request and hasattr(request, 'META'):
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         ip_addr = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
         
@@ -117,7 +117,7 @@ def log_user_login(sender, request, user, **kwargs):
 @receiver(user_logged_out)
 def log_user_logout(sender, request, user, **kwargs):
     ip_addr = None
-    if request:
+    if request and hasattr(request, 'META'):
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         ip_addr = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
         

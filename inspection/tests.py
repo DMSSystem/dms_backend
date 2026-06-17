@@ -14,15 +14,15 @@ class InspectionAPITest(APITestCase):
         # Create users
         self.admin = User.objects.create_user(
             username='admin_in', email='admin_in@dms.com',
-            password='Admin@1234', role='admin'
+            password='Admin_in@1234', role='admin'
         )
         self.officer = User.objects.create_user(
             username='officer_in', email='officer_in@dms.com',
-            password='Officer@1234', role='officer'
+            password='Officer_in@1234', role='officer'
         )
         self.parent = User.objects.create_user(
             username='parent_in', email='parent_in@dms.com',
-            password='Parent@1234', role='parent'
+            password='Parent_in@1234', role='parent'
         )
         
         # Create rooms

@@ -15,15 +15,15 @@ class LeaveOutAPITest(APITestCase):
         # Create users
         self.admin = User.objects.create_user(
             username='admin_lo', email='admin_lo@dms.com',
-            password='Admin@1234', role='admin'
+            password='Admin_lo@1234', role='admin'
         )
         self.officer = User.objects.create_user(
             username='officer_lo', email='officer_lo@dms.com',
-            password='Officer@1234', role='officer'
+            password='Officer_lo@1234', role='officer'
         )
         self.parent1 = User.objects.create_user(
             username='parent1_lo', email='parent1_lo@dms.com',
-            password='Parent1@1234', role='parent'
+            password='Parent1_lo@1234', role='parent'
         )
         
         self.room = Room.objects.create(dorm_name='Everest', room_number='404', capacity=4)

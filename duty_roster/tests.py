@@ -15,15 +15,15 @@ class DutyRosterAPITest(APITestCase):
         # Create users
         self.admin = User.objects.create_user(
             username='admin_dr', email='admin_dr@dms.com',
-            password='Admin@1234', role='admin'
+            password='Admin_dr@1234', role='admin'
         )
         self.officer = User.objects.create_user(
             username='officer_dr', email='officer_dr@dms.com',
-            password='Officer@1234', role='officer'
+            password='Officer_dr@1234', role='officer'
         )
         self.parent1 = User.objects.create_user(
             username='parent1_dr', email='parent1_dr@dms.com',
-            password='Parent1@1234', role='parent'
+            password='Parent1_dr@1234', role='parent'
         )
         
         self.room = Room.objects.create(dorm_name='Kilimanjaro', room_number='505', capacity=4)

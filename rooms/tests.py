@@ -12,11 +12,15 @@ class RoomAPITest(APITestCase):
         # Create users
         self.admin = User.objects.create_user(
             username='admin_rm', email='admin_rm@dms.com',
-            password='Admin@1234', role='admin'
+            password='Admin_rm@1234', role='admin'
         )
         self.officer = User.objects.create_user(
             username='officer_rm', email='officer_rm@dms.com',
-            password='Officer@1234', role='officer'
+            password='Officer_rm@1234', role='officer'
+        )
+        self.parent = User.objects.create_user(
+            username='parent_rm', email='parent_rm@dms.com',
+            password='Parent_rm@1234', role='parent'
         )
         
         # Create a room
@@ -49,11 +53,20 @@ class RoomAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Room.objects.filter(dorm_name='Mount Kenya', room_number='202').exists())
 
-    def test_officer_cannot_create_room(self):
+    def test_officer_can_create_room(self):
         self._auth(self.officer)
         res = self.client.post(self.list_url, {
-            'dorm_name': 'Mount Kenya',
-            'room_number': '202',
+            'dorm_name': 'Mount Kenya 2',
+            'room_number': '303',
+            'capacity': 6
+        })
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+    def test_parent_cannot_create_room(self):
+        self._auth(self.parent)
+        res = self.client.post(self.list_url, {
+            'dorm_name': 'Mount Kenya 3',
+            'room_number': '404',
             'capacity': 6
         })
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)

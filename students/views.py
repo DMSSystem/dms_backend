@@ -5,17 +5,16 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import Student, EmergencyContact
 from .serializers import StudentSerializer, EmergencyContactSerializer
-from users.permissions import IsAdminOrReadOnly, IsAdminOrOfficer
+from users.permissions import IsAdminOrOfficerOrReadOnly, IsAdminOrOfficer
 
 class StudentViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Student management.
-    - Admin has full CRUD.
-    - Boarding Officer has read-only access to all students.
+    - Admin and Officer have full CRUD.
     - Parent has read-only access to their own child.
     """
     serializer_class = StudentSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrOfficerOrReadOnly]
 
     def get_queryset(self):
         user = self.request.user
@@ -31,12 +30,11 @@ class StudentViewSet(viewsets.ModelViewSet):
 class EmergencyContactViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Emergency Contact management.
-    - Admin has full CRUD.
-    - Boarding Officer has read-only access to all contacts.
+    - Admin and Officer have full CRUD.
     - Parent has read-only access to emergency contacts of their child.
     """
     serializer_class = EmergencyContactSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrOfficerOrReadOnly]
 
     def get_queryset(self):
         user = self.request.user

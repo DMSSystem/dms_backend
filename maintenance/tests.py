@@ -13,15 +13,15 @@ class MaintenanceAPITest(APITestCase):
         # Create users
         self.admin = User.objects.create_user(
             username='admin_mt', email='admin_mt@dms.com',
-            password='Admin@1234', role='admin'
+            password='Admin_mt@1234', role='admin'
         )
         self.officer = User.objects.create_user(
             username='officer_mt', email='officer_mt@dms.com',
-            password='Officer@1234', role='officer'
+            password='Officer_mt@1234', role='officer'
         )
         self.parent = User.objects.create_user(
             username='parent_mt', email='parent_mt@dms.com',
-            password='Parent@1234', role='parent'
+            password='Parent_mt@1234', role='parent'
         )
         
         # Create request

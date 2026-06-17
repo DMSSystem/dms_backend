@@ -63,3 +63,16 @@ class IsAdminOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return request.user.is_admin
+
+
+class IsAdminOrOfficerOrReadOnly(BasePermission):
+    """
+    Admins and Boarding Officers have full write access.
+    All other authenticated users get read-only access.
+    """
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user.is_admin or request.user.is_officer

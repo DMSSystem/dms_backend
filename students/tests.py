@@ -13,19 +13,19 @@ class StudentAPITest(APITestCase):
         # Create users
         self.admin = User.objects.create_user(
             username='admin_st', email='admin_st@dms.com',
-            password='Admin@1234', role='admin'
+            password='Admin_st@1234', role='admin'
         )
         self.officer = User.objects.create_user(
             username='officer_st', email='officer_st@dms.com',
-            password='Officer@1234', role='officer'
+            password='Officer_st@1234', role='officer'
         )
         self.parent1 = User.objects.create_user(
             username='parent1_st', email='parent1_st@dms.com',
-            password='Parent1@1234', role='parent'
+            password='Parent1_st@1234', role='parent'
         )
         self.parent2 = User.objects.create_user(
             username='parent2_st', email='parent2_st@dms.com',
-            password='Parent2@1234', role='parent'
+            password='Parent2_st@1234', role='parent'
         )
         
         # Create rooms
@@ -115,3 +115,41 @@ class StudentAPITest(APITestCase):
         res = self.client.get(url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data['results']), 2)
+
+    def test_officer_can_create_student_with_emergency_contacts(self):
+        self._auth(self.officer)
+        res = self.client.post(self.list_url, {
+            'full_name': 'Bill Gates',
+            'admission_no': 'ADM999',
+            'room': self.room.id,
+            'emergency_contacts': [
+                {'name': 'Melinda Gates', 'relationship': 'Spouse', 'phone': '0733333333'}
+            ]
+        }, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(Student.objects.filter(admission_no='ADM999').exists())
+        student = Student.objects.get(admission_no='ADM999')
+        self.assertEqual(student.emergency_contacts.count(), 1)
+        self.assertEqual(student.emergency_contacts.first().name, 'Melinda Gates')
+
+    def test_student_creation_without_emergency_contacts_rejected(self):
+        self._auth(self.officer)
+        res = self.client.post(self.list_url, {
+            'full_name': 'Steve Jobs',
+            'admission_no': 'ADM888',
+            'room': self.room.id,
+            'emergency_contacts': []
+        }, format='json')
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_parent_cannot_create_student(self):
+        self._auth(self.parent1)
+        res = self.client.post(self.list_url, {
+            'full_name': 'Mark Zuckerberg',
+            'admission_no': 'ADM777',
+            'room': self.room.id,
+            'emergency_contacts': [
+                {'name': 'Priscilla Chan', 'relationship': 'Spouse', 'phone': '0744444444'}
+            ]
+        }, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
