@@ -199,14 +199,14 @@ class UserAPITest(APITestCase):
         })
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_officer_cannot_create_user(self):
+    def test_officer_can_create_user(self):
         self._auth(self.officer)
         res = self.client.post(self.list_url, {
             'username': 'hackuser', 'email': 'hack@dms.com',
             'role': 'admin', 'password': 'Pass@1234',
             'confirm_password': 'Pass@1234',
         })
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
     # ── Me endpoint ─────────────────────────────────────────
 

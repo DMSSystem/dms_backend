@@ -14,11 +14,11 @@ urlpatterns = [
     
     # API Routes
     path('api/', include('users.urls')),           # /api/users/, /api/token/
-    # path('api/', include('rooms.urls')),           # /api/rooms/  ← ADDED
-    # path('api/', include('students.urls')),        # /api/students/, /api/emergency-contacts/ ← ADDED
-    # path('api/', include('leave_out.urls')),       # /api/leave-out/
-    # path('api/', include('maintenance.urls')),     # /api/maintenance/
-    # path('api/', include('duty_roster.urls')),     # /api/duty-roster/
-    # path('api/', include('inspection.urls')),      # /api/inspections/
-    # path('api/', include('audit_log.urls')),       # /api/audit-logs/
+    path('api/', include('rooms.urls')),           # /api/rooms/  ← ADDED
+    path('api/', include('students.urls')),        # /api/students/, /api/emergency-contacts/ ← ADDED
+    path('api/', include('leave_out.urls')),       # /api/leave-out/
+    path('api/', include('maintenance.urls')),     # /api/maintenance/
+    path('api/', include('duty_roster.urls')),     # /api/duty-roster/
+    path('api/', include('inspection.urls')),      # /api/inspections/
+    path('api/', include('audit_log.urls')),       # /api/audit-logs/
 ]
