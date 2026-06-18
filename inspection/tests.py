@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.utils import timezone
 from users.models import User
-from rooms.models import Room
+from rooms.models import Room, Dorm
 from .models import Inspection
 
 class InspectionAPITest(APITestCase):
@@ -26,8 +26,10 @@ class InspectionAPITest(APITestCase):
         )
         
         # Create rooms
-        self.room1 = Room.objects.create(dorm_name='Elbrus', room_number='101', capacity=4)
-        self.room2 = Room.objects.create(dorm_name='Elbrus', room_number='102', capacity=4)
+        self.dorm = Dorm.objects.create(name='Elbrus', number_of_rooms=2, room_capacity=4)
+        self.room1 = Room.objects.create(dorm=self.dorm, room_number='101', capacity=4)
+        self.room2 = Room.objects.create(dorm=self.dorm, room_number='102', capacity=4)
+
         
         # Create an inspection for room1 today
         self.inspection = Inspection.objects.create(

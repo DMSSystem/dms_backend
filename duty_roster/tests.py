@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.utils import timezone
 from users.models import User
-from rooms.models import Room
+from rooms.models import Room, Dorm
 from students.models import Student
 from .models import DutyRoster, DutyAssignment
 
@@ -26,7 +26,9 @@ class DutyRosterAPITest(APITestCase):
             password='Parent1_dr@1234', role='parent'
         )
         
-        self.room = Room.objects.create(dorm_name='Kilimanjaro', room_number='505', capacity=4)
+        self.dorm = Dorm.objects.create(name='Kilimanjaro', number_of_rooms=1, room_capacity=4)
+        self.room = Room.objects.create(dorm=self.dorm, room_number='505', capacity=4)
+
         
         self.student = Student.objects.create(
             full_name='Charlie Brown',

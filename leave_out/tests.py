@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.utils import timezone
 from users.models import User
-from rooms.models import Room
+from rooms.models import Room, Dorm
 from students.models import Student
 from .models import LeaveOut
 
@@ -26,7 +26,9 @@ class LeaveOutAPITest(APITestCase):
             password='Parent1_lo@1234', role='parent'
         )
         
-        self.room = Room.objects.create(dorm_name='Everest', room_number='404', capacity=4)
+        self.dorm = Dorm.objects.create(name='Everest', number_of_rooms=1, room_capacity=4)
+        self.room = Room.objects.create(dorm=self.dorm, room_number='404', capacity=4)
+
         
         self.student = Student.objects.create(
             full_name='Charlie Brown',

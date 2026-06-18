@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from users.models import User
-from rooms.models import Room
+from rooms.models import Room, Dorm
 from .models import Student, EmergencyContact
 
 class StudentAPITest(APITestCase):
@@ -29,7 +29,9 @@ class StudentAPITest(APITestCase):
         )
         
         # Create rooms
-        self.room = Room.objects.create(dorm_name='Lhotse', room_number='303', capacity=4)
+        self.dorm = Dorm.objects.create(name='Lhotse', number_of_rooms=1, room_capacity=4)
+        self.room = Room.objects.create(dorm=self.dorm, room_number='303', capacity=4)
+
         
         # Create students
         self.student1 = Student.objects.create(
