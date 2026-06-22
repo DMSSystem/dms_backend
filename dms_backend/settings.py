@@ -76,6 +76,14 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
 }
 
+# Simple JWT Settings
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+}
+
 # Spectacular (Swagger) Settings
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Dormitory Management System API',

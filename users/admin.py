@@ -8,14 +8,14 @@ from .models import User
 
 class UserChangeForm(UserChangeForm):
     """Form for updating users in admin."""
-    class Meta:
+    class Meta:  # type: ignore
         model = User
         fields = '__all__'
 
 
 class UserCreationForm(UserCreationForm):
     """Form for creating users in admin."""
-    class Meta:
+    class Meta:  # type: ignore
         model = User
         fields = ('username', 'email', 'role')
 
