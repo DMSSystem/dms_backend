@@ -15,6 +15,7 @@ class StudentViewSet(viewsets.ModelViewSet):
     """
     serializer_class = StudentSerializer
     permission_classes = [IsAdminOrOfficerOrReadOnly]
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user

@@ -13,6 +13,7 @@ class DormViewSet(viewsets.ModelViewSet):
     queryset = Dorm.objects.all().order_by('name')
     serializer_class = DormSerializer
     permission_classes = [IsAdminOrOfficerOrReadOnly]
+    pagination_class = None
 
 
 class RoomViewSet(viewsets.ModelViewSet):
@@ -24,4 +25,5 @@ class RoomViewSet(viewsets.ModelViewSet):
     queryset = Room.objects.all().select_related('dorm').order_by('dorm__name', 'room_number')
     serializer_class = RoomSerializer
     permission_classes = [IsAdminOrOfficerOrReadOnly]
+    pagination_class = None
 
