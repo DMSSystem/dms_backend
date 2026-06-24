@@ -41,7 +41,7 @@ class InspectionViewSet(viewsets.ModelViewSet):
         inspected_room_ids = recent_inspections.values_list('room_id', flat=True).distinct()
         
         # Exclude those rooms to find uninspected ones
-        uninspected_rooms = Room.objects.exclude(id__in=inspected_room_ids).order_by('dorm_name', 'room_number')
+        uninspected_rooms = Room.objects.exclude(id__in=inspected_room_ids).order_by('dorm__name', 'room_number')
         
         serializer = RoomSerializer(uninspected_rooms, many=True)
         return Response(serializer.data)

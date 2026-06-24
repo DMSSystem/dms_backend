@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.utils import timezone
 from users.models import User
-from rooms.models import Room
+from rooms.models import Room, Dorm
 from .models import AuditLog
 
 class AuditLogAPITest(APITestCase):
@@ -44,12 +44,15 @@ class AuditLogAPITest(APITestCase):
         # We need to authenticate as admin, make a room creation call, and verify it logs it with user and IP
         self._auth(self.admin)
         
+        # Create a Dorm first since it's required for Room creation
+        dorm = Dorm.objects.create(name='Kilimanjaro', number_of_rooms=1, room_capacity=4)
+        
         # Clear existing logs created during user setups if any
         AuditLog.objects.all().delete()
         
         # Create a room via API to execute middleware and capture user
         self.client.post(reverse('room-list'), {
-            'dorm_name': 'Kilimanjaro',
+            'dorm': dorm.id,
             'room_number': '999',
             'capacity': 4
         })
