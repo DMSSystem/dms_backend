@@ -129,3 +129,27 @@ class RoomAPITest(APITestCase):
         room_numbers = list(Room.objects.filter(dorm=self.dorm).values_list('room_number', flat=True).order_by('id'))
         self.assertEqual(room_numbers, ['101', '2', '3']) # '101' was manually created in setup, 2 and 3 auto-created
 
+    def test_cannot_delete_dorm_if_rooms_occupied(self):
+        self._auth(self.admin)
+        # Make the room occupied
+        self.room.current_occupancy = 2
+        self.room.save()
+        
+        url = reverse('dorm-detail', args=[self.dorm.id])
+        res = self.client.delete(url)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Cannot delete dormitory because it contains occupied rooms.", res.data['detail'])
+        # Verify dorm still exists
+        self.assertTrue(Dorm.objects.filter(id=self.dorm.id).exists())
+
+    def test_can_delete_dorm_if_rooms_empty(self):
+        self._auth(self.admin)
+        # Ensure room is empty (it is 0 occupancy in setUp)
+        self.assertEqual(self.room.current_occupancy, 0)
+        
+        url = reverse('dorm-detail', args=[self.dorm.id])
+        res = self.client.delete(url)
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        # Verify dorm is deleted
+        self.assertFalse(Dorm.objects.filter(id=self.dorm.id).exists())
+

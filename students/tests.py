@@ -76,15 +76,15 @@ class StudentAPITest(APITestCase):
         self._auth(self.admin)
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        # Standard pagination: results key holds data
-        self.assertEqual(len(res.data['results']), 2)
+        # Pagination disabled: root is a list
+        self.assertEqual(len(res.data), 2)
 
     def test_parent_can_only_see_own_child(self):
         self._auth(self.parent1)
         res = self.client.get(self.list_url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(res.data['results']), 1)
-        self.assertEqual(res.data['results'][0]['admission_no'], 'ADM001')
+        self.assertEqual(len(res.data), 1)
+        self.assertEqual(res.data[0]['admission_no'], 'ADM001')
 
     def test_parent_only_gets_own_child_contact(self):
         self._auth(self.parent2)
