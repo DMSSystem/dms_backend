@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
     TokenObtainPairView, TokenRefreshView, TokenVerifyView,
 )
-from .views import UserViewSet, SignupView, VerifyOTPView, ResendOTPView
+from .views import UserViewSet, SignupView, VerifyOTPView, ResendOTPView, ForgotPasswordView, ResetPasswordView
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
@@ -12,9 +12,11 @@ router.register(r'users', UserViewSet, basename='user')
 urlpatterns = [
 
     # ── Public (no token required) ─────────────────────────
-    path('auth/signup/',      SignupView.as_view(),    name='signup'),
-    path('auth/verify-otp/',  VerifyOTPView.as_view(), name='verify-otp'),
-    path('auth/resend-otp/',  ResendOTPView.as_view(), name='resend-otp'),
+    path('auth/signup/',          SignupView.as_view(),          name='signup'),
+    path('auth/verify-otp/',      VerifyOTPView.as_view(),      name='verify-otp'),
+    path('auth/resend-otp/',      ResendOTPView.as_view(),      name='resend-otp'),
+    path('auth/forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
+    path('auth/reset-password/',  ResetPasswordView.as_view(),  name='reset-password'),
 
     # ── JWT token endpoints ────────────────────────────────
     path('token/',         TokenObtainPairView.as_view(), name='token_obtain_pair'),

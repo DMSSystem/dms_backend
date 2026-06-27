@@ -310,3 +310,37 @@ class PasswordResetSerializer(serializers.Serializer):
         except DjangoValidationError as e:
             raise serializers.ValidationError(list(e.messages))
         return value
+
+
+class ForgotPasswordRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+class ForgotPasswordResetSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    otp_code = serializers.CharField(required=True, min_length=6, max_length=6)
+    new_password = serializers.CharField(write_only=True, required=True)
+    confirm_new_password = serializers.CharField(write_only=True, required=True)
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['confirm_new_password']:
+            raise serializers.ValidationError({"confirm_new_password": "New passwords do not match."})
+
+        try:
+            validate_password(attrs['new_password'])
+        except DjangoValidationError as e:
+            raise serializers.ValidationError({"new_password": list(e.messages)})
+
+        try:
+            user = User.objects.get(username=attrs['username'])
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"username": "User not found."})
+
+        if user.otp_attempts >= 5:
+            raise serializers.ValidationError("Too many failed attempts. Please request a new code.")
+
+        if not user.is_otp_valid(attrs['otp_code']):
+            raise serializers.ValidationError({"otp_code": "Invalid or expired verification code."})
+
+        attrs['user'] = user
+        return attrs
