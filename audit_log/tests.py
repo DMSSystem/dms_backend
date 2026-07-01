@@ -62,3 +62,27 @@ class AuditLogAPITest(APITestCase):
         self.assertEqual(logs.count(), 1)
         self.assertIn("Room 'Kilimanjaro - Room 999' was created", logs.first().description)
         self.assertEqual(logs.first().user, self.admin)
+
+    def test_user_self_deletion_audit_log_handling(self):
+        from audit_log.middleware import _local
+        
+        # Set the thread local current user to the admin user
+        _local.user = self.admin
+        
+        try:
+            # Delete the admin user (should not raise IntegrityError/ForeignKeyViolation)
+            self.admin.delete()
+        finally:
+            # Clean up thread local
+            _local.user = None
+            
+        # Verify that the admin user was deleted
+        self.assertFalse(User.objects.filter(username='admin_al').exists())
+        
+        # Verify the audit log entries
+        # Since the user was deleted, the audit log entries referencing this user should have user=None
+        logs = AuditLog.objects.filter(description__icontains="deleted")
+        self.assertTrue(logs.exists())
+        for log in logs:
+            self.assertIsNone(log.user)
+

@@ -13,7 +13,7 @@ from .serializers import (
     SignupSerializer, OTPVerifySerializer, ResendOTPSerializer,
     ForgotPasswordRequestSerializer, ForgotPasswordResetSerializer,
 )
-from .permissions import IsAdmin, IsOwnerOrAdmin
+from .permissions import IsAdmin, IsOwnerOrAdmin, IsAdminOrOfficer
 from .utils import send_otp
 
 
@@ -240,8 +240,10 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action in ['me', 'change_password', 'partial_update']:
             return [IsAuthenticated()]
         if self.action in ['create', 'update', 'destroy', 'reset_password',
-                           'deactivate', 'activate', 'list', 'by_role']:
+                           'deactivate', 'activate', 'list']:
             return [IsAdmin()]
+        if self.action == 'by_role':
+            return [IsAdminOrOfficer()]
         return [IsOwnerOrAdmin()]
 
     def destroy(self, request, *args, **kwargs):
@@ -314,7 +316,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user.save()
         return Response({"detail": f"User '{user.username}' has been activated."})
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAdmin],
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminOrOfficer],
             url_path='by_role')
     def by_role(self, request):
         role = request.query_params.get('role')

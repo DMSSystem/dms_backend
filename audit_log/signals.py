@@ -22,13 +22,22 @@ def log_action(instance, action, module, description):
     if module == 'auditlog':
         return
         
+    user = current_user
+    if user:
+        # Check if the user still exists in the database to prevent ForeignKeyViolation.
+        # This handles cases where the user deletes their own account, or is deleted
+        # in a bulk deletion, but is still set in thread-local storage.
+        if not User.objects.filter(pk=user.pk).exists():
+            user = None
+
     AuditLog.objects.create(
-        user=current_user,
+        user=user,
         action=action,
         module=module,
         description=description,
         ip_address=current_ip
     )
+
 
 # Receivers for post_save
 @receiver(post_save, sender=User)

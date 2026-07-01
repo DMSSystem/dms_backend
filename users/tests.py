@@ -280,6 +280,16 @@ class UserAPITest(APITestCase):
         for u in res.data:
             self.assertEqual(u['role'], 'officer')
 
+    def test_officer_can_filter_users_by_role(self):
+        self._auth(self.officer)
+        res = self.client.get(reverse('user-by-role') + '?role=parent')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_parent_cannot_filter_users_by_role(self):
+        self._auth(self.parent)
+        res = self.client.get(reverse('user-by-role') + '?role=parent')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_filter_invalid_role_returns_400(self):
         self._auth(self.admin)
         res = self.client.get(reverse('user-by-role') + '?role=superuser')
