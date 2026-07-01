@@ -16,6 +16,8 @@ class Student(models.Model):
         blank=True,
         related_name='child_student'
     )
+    grade = models.CharField(max_length=50, blank=True, null=True)
+    stream = models.CharField(max_length=50, blank=True, null=True)
     
     class Meta:
         db_table = 'student'

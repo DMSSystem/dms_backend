@@ -22,7 +22,7 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = [
             'id', 'full_name', 'admission_no', 'room', 'room_details',
-            'parent', 'parent_username', 'emergency_contacts'
+            'parent', 'parent_username', 'grade', 'stream', 'emergency_contacts'
         ]
         read_only_fields = ['id']
 

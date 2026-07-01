@@ -124,6 +124,8 @@ class StudentAPITest(APITestCase):
             'full_name': 'Bill Gates',
             'admission_no': 'ADM999',
             'room': self.room.id,
+            'grade': 'Form 4',
+            'stream': 'Blue',
             'emergency_contacts': [
                 {'name': 'Melinda Gates', 'relationship': 'Spouse', 'phone': '0733333333'}
             ]
@@ -131,6 +133,8 @@ class StudentAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Student.objects.filter(admission_no='ADM999').exists())
         student = Student.objects.get(admission_no='ADM999')
+        self.assertEqual(student.grade, 'Form 4')
+        self.assertEqual(student.stream, 'Blue')
         self.assertEqual(student.emergency_contacts.count(), 1)
         self.assertEqual(student.emergency_contacts.first().name, 'Melinda Gates')
 
