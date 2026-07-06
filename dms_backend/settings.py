@@ -12,6 +12,17 @@ import sys
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load .env file into os.environ for local development
+dot_env_path = BASE_DIR / '.env'
+if dot_env_path.exists():
+    from decouple import RepositoryEnv
+    try:
+        env_vars = RepositoryEnv(str(dot_env_path))
+        for key, value in env_vars.data.items():
+            os.environ.setdefault(key, value)
+    except Exception:
+        pass
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-(fh9=6$57)t9pl)7vy-xpc+c_es16kr2z31gn)6sh@rdfv#+ce'
 
@@ -130,16 +141,17 @@ CORS_ALLOW_CREDENTIALS = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='dms_db'),
-        'USER': config('DB_USER', default='postgres'),
-        'PASSWORD': config('DB_PASSWORD', default=''),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5433'),
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
         'OPTIONS': {
-            'pool': True,  # psycopg v3 connection pooling
+            'sslmode': 'require',
+            'channel_binding': 'require',
         },
     }
-}   
+} 
 
 ROOT_URLCONF = 'dms_backend.urls'
 
