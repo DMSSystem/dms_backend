@@ -1,4 +1,5 @@
 # students/serializers.py
+import re
 from rest_framework import serializers
 from .models import Student, EmergencyContact
 from rooms.serializers import RoomSerializer
@@ -11,6 +12,19 @@ class EmergencyContactSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'student': {'required': False, 'allow_null': True}
         }
+
+    def validate_phone(self, value):
+        """Phone must contain only digits, spaces, +, -, parentheses."""
+        cleaned = re.sub(r'[\s\-\(\)\+]', '', value)
+        if not cleaned.isdigit():
+            raise serializers.ValidationError(
+                "Phone number must contain only digits (spaces, +, - and parentheses are allowed)."
+            )
+        if len(cleaned) < 7 or len(cleaned) > 15:
+            raise serializers.ValidationError(
+                "Phone number must be between 7 and 15 digits."
+            )
+        return value
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -25,6 +39,26 @@ class StudentSerializer(serializers.ModelSerializer):
             'parent', 'parent_username', 'grade', 'stream', 'emergency_contacts'
         ]
         read_only_fields = ['id']
+
+    def validate_full_name(self, value):
+        """Full name must only contain letters, spaces, hyphens, and apostrophes."""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Full name is required.")
+        if not re.match(r"^[A-Za-z\s\-\']+$", value.strip()):
+            raise serializers.ValidationError(
+                "Full name must contain only letters, spaces, hyphens, and apostrophes."
+            )
+        return value.strip()
+
+    def validate_admission_no(self, value):
+        """Admission number must contain digits only."""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Admission number is required.")
+        if not re.match(r'^\d+$', value.strip()):
+            raise serializers.ValidationError(
+                "Admission number must contain digits only."
+            )
+        return value.strip()
 
     def validate_emergency_contacts(self, value):
         if not value or len(value) == 0:

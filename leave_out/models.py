@@ -33,5 +33,10 @@ class LeaveOut(models.Model):
         return f"{self.student.full_name} - {self.leave_date} to {self.return_date} ({self.status})"
     
     def is_overdue(self):
-        """Flag overdue returns where student has not returned by the stated date"""
-        return self.return_date < timezone.now().date() and self.status != 'completed'
+        """Flag overdue returns where student has not returned by the stated date.
+        Only approved leaves that are past their return date are overdue.
+        Rejected, pending, and completed leaves are never overdue."""
+        return (
+            self.status == 'approved' and
+            self.return_date < timezone.now().date()
+        )

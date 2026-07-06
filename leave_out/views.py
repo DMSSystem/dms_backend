@@ -35,8 +35,9 @@ class LeaveOutViewSet(viewsets.ModelViewSet):
         overdue = self.request.query_params.get('overdue')
         if overdue == 'true':
             queryset = queryset.filter(
+                status='approved',
                 return_date__lt=timezone.now().date()
-            ).exclude(status='completed')
+            )
             
         return queryset
 

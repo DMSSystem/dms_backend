@@ -17,6 +17,11 @@ class LeaveOutSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'status', 'approved_by', 'created_at', 'updated_at']
 
+    def validate_reason(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("A reason is required for the leave request.")
+        return value.strip()
+
     def get_is_overdue(self, obj):
         return obj.is_overdue()
 

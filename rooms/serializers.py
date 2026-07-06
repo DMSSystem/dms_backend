@@ -1,6 +1,6 @@
 # rooms/serializers.py
 from rest_framework import serializers
-from .models import Room, Dorm
+from .models import Room, Dorm, AcademicTerm
 
 class DormSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,3 +64,18 @@ class RoomSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"current_occupancy": "Current occupancy cannot exceed room capacity."})
         return attrs
 
+
+class AcademicTermSerializer(serializers.ModelSerializer):
+    is_current = serializers.ReadOnlyField()
+
+    class Meta:
+        model = AcademicTerm
+        fields = ['id', 'name', 'start_date', 'end_date', 'is_active', 'is_current', 'created_at']
+        read_only_fields = ['id', 'is_current', 'created_at']
+
+    def validate(self, attrs):
+        start = attrs.get('start_date', getattr(self.instance, 'start_date', None))
+        end = attrs.get('end_date', getattr(self.instance, 'end_date', None))
+        if start and end and end <= start:
+            raise serializers.ValidationError({"end_date": "End date must be after start date."})
+        return attrs
