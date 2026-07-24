@@ -6,6 +6,7 @@ from students.serializers import StudentSerializer
 class LeaveOutSerializer(serializers.ModelSerializer):
     student_details = StudentSerializer(source='student', read_only=True)
     approved_by_username = serializers.ReadOnlyField(source='approved_by.username')
+    returned_by_username = serializers.ReadOnlyField(source='returned_by.username')
     is_overdue = serializers.SerializerMethodField()
 
     class Meta:
@@ -13,9 +14,10 @@ class LeaveOutSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'student', 'student_details', 'leave_date', 'return_date',
             'reason', 'status', 'approved_by', 'approved_by_username',
+            'returned_by', 'returned_by_username', 'returned_at',
             'is_overdue', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'status', 'approved_by', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'status', 'approved_by', 'returned_by', 'returned_at', 'created_at', 'updated_at']
 
     def validate_reason(self, value):
         if not value or not value.strip():

@@ -47,25 +47,39 @@ class LeaveOutViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("Only administrators and boarding officers can submit leave-out requests.")
         serializer.save()
 
-    @action(detail=True, methods=['put', 'post'], permission_classes=[IsAdmin])
+    @action(detail=True, methods=['put', 'post'], permission_classes=[IsAdminOrOfficer])
     def approve(self, request, pk=None):
         """
-        Approve or reject a leave-out request.
-        Admins only. Sends notification email to parent/guardian.
-        Expects payload: {"status": "approved" | "rejected"}
+        Change the status of a leave-out request.
+        - Admins: can set approved, rejected, or completed.
+        - Officers: can only set completed (mark a student as returned).
+        Sends notification email to parent/guardian on approve/reject.
+        Expects payload: {"status": "approved" | "rejected" | "completed" | "pending"}
         """
         leave_out = self.get_object()
         new_status = request.data.get('status')
-        
+        user = request.user
+
         if new_status not in ['approved', 'rejected', 'completed', 'pending']:
             return Response(
                 {"error": "Invalid status. Choose approved, rejected, completed, or pending."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-            
+
+        # Officers may only mark a student as returned — approving/rejecting
+        # a leave request is a judgment call reserved for Admins.
+        if user.is_officer and new_status != 'completed':
+            raise PermissionDenied(
+                "Boarding Officers can only mark a leave as completed (student returned). "
+                "Approving or rejecting a leave request requires an Administrator."
+            )
+
         leave_out.status = new_status
         if new_status in ['approved', 'rejected']:
             leave_out.approved_by = request.user
+        if new_status == 'completed':
+            leave_out.returned_by = request.user
+            leave_out.returned_at = timezone.now()
         leave_out.save()
         
         # Notify Parent/Guardian of status change

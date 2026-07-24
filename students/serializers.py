@@ -31,12 +31,15 @@ class StudentSerializer(serializers.ModelSerializer):
     emergency_contacts = EmergencyContactSerializer(many=True, required=True)
     room_details = RoomSerializer(source='room', read_only=True)
     parent_username = serializers.ReadOnlyField(source='parent.username')
+    parent_email = serializers.ReadOnlyField(source='parent.email')
+    parent_phone = serializers.ReadOnlyField(source='parent.phone')
 
     class Meta:
         model = Student
         fields = [
             'id', 'full_name', 'admission_no', 'room', 'room_details',
-            'parent', 'parent_username', 'grade', 'stream', 'emergency_contacts'
+            'parent', 'parent_username', 'parent_email', 'parent_phone',
+            'grade', 'stream', 'emergency_contacts'
         ]
         read_only_fields = ['id']
 
