@@ -207,15 +207,12 @@ gunicorn dms_backend.wsgi:application \
 4. Push changes
 5. Open Pull Request
 
-## 📝 License
-
-MIT License
 
 ## 👥 Authors
 
-- Your Name
+- Elvis Marube
 
 ## 📧 Contact
 
-- Email: your.email@example.com
-- GitHub: https://github.com/yourusername
+- Email: emarube89@gmail.com
+- GitHub: https://github.com/marube2005
