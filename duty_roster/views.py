@@ -48,7 +48,7 @@ class DutyRosterViewSet(viewsets.ModelViewSet):
         queryset = DutyRoster.objects.all().order_by('duty_date', 'dorm_name')
         
         if user.is_parent:
-            queryset = queryset.filter(assigned_students__parent=user).distinct()
+            queryset = queryset.filter(assigned_students__parents=user).distinct()
             
         return queryset
 
@@ -74,7 +74,7 @@ class DutyAssignmentViewSet(viewsets.ModelViewSet):
         queryset = DutyAssignment.objects.all().order_by('duty_roster__duty_date', 'student__full_name')
         
         if user.is_parent:
-            queryset = queryset.filter(student__parent=user)
+            queryset = queryset.filter(student__parents=user)
             
         return queryset
 

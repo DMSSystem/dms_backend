@@ -38,14 +38,15 @@ class StudentAPITest(APITestCase):
             full_name='John Doe',
             admission_no='ADM001',
             room=self.room,
-            parent=self.parent1
         )
+        self.student1.parents.add(self.parent1)
+
         self.student2 = Student.objects.create(
             full_name='Jane Smith',
             admission_no='ADM002',
             room=self.room,
-            parent=self.parent2
         )
+        self.student2.parents.add(self.parent2)
         
         # Emergency Contacts
         self.contact1 = EmergencyContact.objects.create(
@@ -159,3 +160,47 @@ class StudentAPITest(APITestCase):
             ]
         }, format='json')
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_duplicate_emergency_contact_phone_rejected(self):
+        self._auth(self.officer)
+        res = self.client.post(self.list_url, {
+            'full_name': 'Elon Musk',
+            'admission_no': 'ADM666',
+            'room': self.room.id,
+            'emergency_contacts': [
+                {'name': 'Contact 1', 'relationship': 'Father', 'phone': '0755555555'},
+                {'name': 'Contact 2', 'relationship': 'Mother', 'phone': '0755555555'}
+            ]
+        }, format='json')
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_soft_delete_emergency_contacts_on_update(self):
+        self._auth(self.officer)
+        detail_url = reverse('student-detail', args=[self.student1.id])
+        res = self.client.put(detail_url, {
+            'full_name': 'John Doe Updated',
+            'admission_no': 'ADM001',
+            'room': self.room.id,
+            'emergency_contacts': [
+                {'name': 'New Contact', 'relationship': 'Guardian', 'phone': '0799999999'}
+            ]
+        }, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        # Old contact should be soft-deleted (is_active=False), total contacts count retains history
+        self.contact1.refresh_from_db()
+        self.assertFalse(self.contact1.is_active)
+        self.assertEqual(self.student1.emergency_contacts.count(), 2)
+        self.assertEqual(self.student1.emergency_contacts.filter(is_active=True).count(), 1)
+
+    def test_multi_parent_assignment(self):
+        self.student1.parents.add(self.parent2)
+        self.assertEqual(self.student1.parents.count(), 2)
+        
+        # Parent 2 should now see child 1 as well
+        self._auth(self.parent2)
+        res = self.client.get(self.list_url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        admissions = [s['admission_no'] for s in res.data]
+        self.assertIn('ADM001', admissions)
+        self.assertIn('ADM002', admissions)
+

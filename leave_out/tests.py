@@ -33,9 +33,9 @@ class LeaveOutAPITest(APITestCase):
         self.student = Student.objects.create(
             full_name='Charlie Brown',
             admission_no='ADM003',
-            room=self.room,
-            parent=self.parent1
+            room=self.room
         )
+        self.student.parents.add(self.parent1)
         
         # Create a leave out
         self.leave_out = LeaveOut.objects.create(
@@ -108,3 +108,52 @@ class LeaveOutAPITest(APITestCase):
         self.assertEqual(len(res.data['results']), 1)
         self.assertEqual(res.data['results'][0]['id'], overdue_leave.id)
         self.assertTrue(overdue_leave.is_overdue())
+
+    def test_log_contact_attempt(self):
+        self._auth(self.officer)
+        url = reverse('leaveout-log-contact', args=[self.leave_out.id])
+        res = self.client.post(url, {
+            'contact_type': 'call',
+            'contact_person': 'Parent (0712345678)',
+            'outcome': 'no_answer',
+            'notes': 'Called father, line busy.'
+        })
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.data['outcome'], 'no_answer')
+        
+        detail_res = self.client.get(self.detail_url)
+        self.assertEqual(len(detail_res.data['contact_attempts']), 1)
+        self.assertEqual(detail_res.data['contact_attempts'][0]['notes'], 'Called father, line busy.')
+
+    def test_overdue_severity_and_escalation(self):
+        today = timezone.now().date()
+        leave_minor = LeaveOut.objects.create(
+            student=self.student, leave_date=today - timezone.timedelta(days=2),
+            return_date=today - timezone.timedelta(days=1), status='approved', reason='Test'
+        )
+        leave_critical = LeaveOut.objects.create(
+            student=self.student, leave_date=today - timezone.timedelta(days=10),
+            return_date=today - timezone.timedelta(days=5), status='approved', reason='Test'
+        )
+        self.assertEqual(leave_minor.overdue_severity, 'minor')
+        self.assertEqual(leave_critical.overdue_severity, 'critical')
+
+        # Officer escalates critical leave
+        self._auth(self.officer)
+        url = reverse('leaveout-approve', args=[leave_critical.id])
+        res = self.client.post(url, {'status': 'escalated'})
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        leave_critical.refresh_from_db()
+        self.assertEqual(leave_critical.status, 'escalated')
+        self.assertTrue(leave_critical.is_overdue())
+
+    def test_reopen_completed_leave(self):
+        self.leave_out.status = 'completed'
+        self.leave_out.save()
+
+        self._auth(self.officer)
+        res = self.client.post(self.approve_url, {'status': 'escalated'})
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.leave_out.refresh_from_db()
+        self.assertEqual(self.leave_out.status, 'escalated')
+

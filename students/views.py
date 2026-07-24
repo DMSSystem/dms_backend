@@ -24,7 +24,7 @@ class StudentViewSet(viewsets.ModelViewSet):
         if user.is_admin or user.is_officer:
             return Student.objects.all()
         if user.is_parent:
-            return Student.objects.filter(parent=user)
+            return Student.objects.filter(parents=user)
         return Student.objects.none()
 
 
@@ -32,7 +32,7 @@ class EmergencyContactViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Emergency Contact management.
     - Admin and Officer have full CRUD.
-    - Parent has read-only access to emergency contacts of their child.
+    - Parent has read-only access to active emergency contacts of their child.
     """
     serializer_class = EmergencyContactSerializer
     permission_classes = [IsAdminOrOfficerOrReadOnly]
@@ -44,7 +44,7 @@ class EmergencyContactViewSet(viewsets.ModelViewSet):
         if user.is_admin or user.is_officer:
             return EmergencyContact.objects.all()
         if user.is_parent:
-            return EmergencyContact.objects.filter(student__parent=user)
+            return EmergencyContact.objects.filter(student__parents=user, is_active=True)
         return EmergencyContact.objects.none()
 
 
@@ -64,7 +64,7 @@ class StudentByAdmissionView(generics.RetrieveAPIView):
         if user.is_admin or user.is_officer:
             return get_object_or_404(Student, admission_no=admission_no)
         elif user.is_parent:
-            return get_object_or_404(Student, admission_no=admission_no, parent=user)
+            return get_object_or_404(Student, admission_no=admission_no, parents=user)
         
         # Unrecognized roles get 404/403
         return get_object_or_404(Student, id=0)
@@ -86,5 +86,5 @@ class StudentsByRoomView(generics.ListAPIView):
         if user.is_admin or user.is_officer:
             return Student.objects.filter(room_id=room_id)
         elif user.is_parent:
-            return Student.objects.filter(room_id=room_id, parent=user)
+            return Student.objects.filter(room_id=room_id, parents=user)
         return Student.objects.none()

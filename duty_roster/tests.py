@@ -33,9 +33,9 @@ class DutyRosterAPITest(APITestCase):
         self.student = Student.objects.create(
             full_name='Charlie Brown',
             admission_no='ADM003',
-            room=self.room,
-            parent=self.parent1
+            room=self.room
         )
+        self.student.parents.add(self.parent1)
         
         # Create roster
         self.roster = DutyRoster.objects.create(

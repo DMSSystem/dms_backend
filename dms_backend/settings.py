@@ -24,7 +24,7 @@ if dot_env_path.exists():
         pass
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-(fh9=6$57)t9pl)7vy-xpc+c_es16kr2z31gn)6sh@rdfv#+ce'
+SECRET_KEY = os.environ.get('SECRET_KEY') or config('SECRET_KEY', default='django-secure-fallback-key-for-dev-only')
 
 # At the top of the file, add this line
 AUTH_USER_MODEL = 'users.User'
@@ -82,6 +82,15 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '200/day',
+        'user': '2000/day',
+        'login': '5/minute',
+    },
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # Swagger schema
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,

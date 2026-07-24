@@ -99,9 +99,9 @@ def seed():
         admission_no="1249",
         grade="Year 10",
         stream="West",
-        room=room_1,
-        parent=parent_user
+        room=room_1
     )
+    student_1.parents.add(parent_user)
     # Update room occupancy
     room_1.current_occupancy = 1
     room_1.save()

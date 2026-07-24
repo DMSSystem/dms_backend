@@ -4,7 +4,10 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
     TokenObtainPairView, TokenRefreshView, TokenVerifyView,
 )
-from .views import UserViewSet, SignupView, VerifyOTPView, ResendOTPView, ForgotPasswordView, ResetPasswordView
+from .views import (
+    UserViewSet, SignupView, VerifyOTPView, ResendOTPView,
+    ForgotPasswordView, ResetPasswordView, LoginRateThrottle
+)
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
@@ -19,7 +22,7 @@ urlpatterns = [
     path('auth/reset-password/',  ResetPasswordView.as_view(),  name='reset-password'),
 
     # ── JWT token endpoints ────────────────────────────────
-    path('token/',         TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/',         TokenObtainPairView.as_view(throttle_classes=[LoginRateThrottle]), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(),    name='token_refresh'),
     path('token/verify/',  TokenVerifyView.as_view(),     name='token_verify'),
 
