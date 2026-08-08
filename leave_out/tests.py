@@ -59,8 +59,9 @@ class LeaveOutAPITest(APITestCase):
 
     def test_officer_can_submit_leave_out(self):
         self._auth(self.officer)
+        student2 = Student.objects.create(full_name='Alice Smith', admission_no='ADM004', room=self.room)
         res = self.client.post(self.list_url, {
-            'student': self.student.id,
+            'student': student2.id,
             'leave_date': timezone.now().date() + timezone.timedelta(days=1),
             'return_date': timezone.now().date() + timezone.timedelta(days=3),
             'reason': 'Family function'
@@ -70,8 +71,10 @@ class LeaveOutAPITest(APITestCase):
 
     def test_parent_cannot_submit_leave_out(self):
         self._auth(self.parent1)
+        student_clean = Student.objects.create(full_name='Clean Student', admission_no='ADM005', room=self.room)
+        student_clean.parents.add(self.parent1)
         res = self.client.post(self.list_url, {
-            'student': self.student.id,
+            'student': student_clean.id,
             'leave_date': timezone.now().date(),
             'return_date': timezone.now().date(),
             'reason': 'Hack'

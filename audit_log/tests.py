@@ -86,3 +86,24 @@ class AuditLogAPITest(APITestCase):
         for log in logs:
             self.assertIsNone(log.user)
 
+    def test_login_creates_audit_log(self):
+        AuditLog.objects.all().delete()
+        res = self.client.post(reverse('token_obtain_pair'), {
+            'username': self.admin.username,
+            'password': 'Admin_al@1234'
+        })
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        logs = AuditLog.objects.filter(action='LOGIN', user=self.admin)
+        self.assertEqual(logs.count(), 1)
+        self.assertIn("logged in successfully", logs.first().description)
+
+    def test_logout_creates_audit_log(self):
+        self._auth(self.admin)
+        AuditLog.objects.all().delete()
+        res = self.client.post(reverse('logout'))
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        logs = AuditLog.objects.filter(action='LOGOUT', user=self.admin)
+        self.assertEqual(logs.count(), 1)
+        self.assertIn("logged out", logs.first().description)
+
+

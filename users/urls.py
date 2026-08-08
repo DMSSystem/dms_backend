@@ -2,11 +2,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView, TokenRefreshView, TokenVerifyView,
+    TokenRefreshView, TokenVerifyView,
 )
 from .views import (
     UserViewSet, SignupView, VerifyOTPView, ResendOTPView,
-    ForgotPasswordView, ResetPasswordView, LoginRateThrottle
+    ForgotPasswordView, ResetPasswordView, LoginRateThrottle,
+    CustomTokenObtainPairView, LogoutView
 )
 
 router = DefaultRouter()
@@ -22,9 +23,12 @@ urlpatterns = [
     path('auth/reset-password/',  ResetPasswordView.as_view(),  name='reset-password'),
 
     # ── JWT token endpoints ────────────────────────────────
-    path('token/',         TokenObtainPairView.as_view(throttle_classes=[LoginRateThrottle]), name='token_obtain_pair'),
+    path('token/',         CustomTokenObtainPairView.as_view(throttle_classes=[LoginRateThrottle]), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(),    name='token_refresh'),
     path('token/verify/',  TokenVerifyView.as_view(),     name='token_verify'),
+
+    # ── Protected auth endpoints ───────────────────────────
+    path('auth/logout/',   LogoutView.as_view(),          name='logout'),
 
     # ── Protected user management ──────────────────────────
     path('', include(router.urls)),

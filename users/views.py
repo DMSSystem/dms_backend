@@ -6,9 +6,12 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework.throttling import ScopedRateThrottle
 from django.db import transaction
+from django.contrib.auth.signals import user_logged_in, user_logged_out
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 class LoginRateThrottle(ScopedRateThrottle):
     scope = 'login'
+
 
 
 from .models import User
@@ -210,6 +213,39 @@ class ResetPasswordView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """
+    Custom JWT Token Obtain view that triggers user_logged_in signal for audit logging.
+    """
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception:
+            return super().post(request, *args, **kwargs)
+
+        user = serializer.user
+        if user:
+            user_logged_in.send(sender=user.__class__, request=request, user=user)
+
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+
+class LogoutView(APIView):
+    """
+    POST /api/auth/logout/
+
+    Logs out the authenticated user and triggers user_logged_out signal for audit logging.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if user and user.is_authenticated:
+            user_logged_out.send(sender=user.__class__, request=request, user=user)
+        return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
+
+
 # ════════════════════════════════════════════════════════════
 # USER MANAGEMENT VIEWSET  (token required)
 # ════════════════════════════════════════════════════════════
@@ -338,3 +374,33 @@ class UserViewSet(viewsets.ModelViewSet):
             )
         serializer = UserSerializer(self.get_queryset().filter(role=role), many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], permission_classes=[IsAdmin], url_path='bulk-import')
+    def bulk_import(self, request):
+        """
+        Bulk import user accounts from JSON array.
+        """
+        users_data = request.data.get('users', [])
+        if not isinstance(users_data, list) or len(users_data) == 0:
+            return Response({'error': 'Please provide a non-empty list of users.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        created_count = 0
+        errors = []
+
+        for idx, item in enumerate(users_data):
+            serializer = UserCreateSerializer(data=item)
+            if serializer.is_valid():
+                serializer.save()
+                created_count += 1
+            else:
+                errors.append({
+                    'row': idx + 1,
+                    'username': item.get('username', 'N/A'),
+                    'errors': serializer.errors
+                })
+
+        return Response({
+            'message': f"Successfully imported {created_count} user(s).",
+            'created_count': created_count,
+            'errors': errors
+        }, status=status.HTTP_201_CREATED if created_count > 0 else status.HTTP_400_BAD_REQUEST)

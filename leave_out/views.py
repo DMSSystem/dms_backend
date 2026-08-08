@@ -66,7 +66,11 @@ class LeaveOutViewSet(viewsets.ModelViewSet):
                     return_date__lt=today - timezone.timedelta(days=3)
                 )
             
-        return queryset
+        return queryset.select_related(
+            'student', 'student__room', 'student__room__dorm', 'approved_by', 'returned_by'
+        ).prefetch_related(
+            'student__parents', 'student__emergency_contacts', 'contact_attempts', 'contact_attempts__performed_by'
+        )
 
     def perform_create(self, serializer):
         user = self.request.user

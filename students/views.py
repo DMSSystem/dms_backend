@@ -7,6 +7,8 @@ from .models import Student, EmergencyContact
 from .serializers import StudentSerializer, EmergencyContactSerializer
 from users.permissions import IsAdminOrOfficerOrReadOnly, IsAdminOrOfficer
 
+from rest_framework.decorators import action
+
 class StudentViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Student management.
@@ -21,11 +23,49 @@ class StudentViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if not user.is_authenticated:
             return Student.objects.none()
+        
+        queryset = Student.objects.none()
         if user.is_admin or user.is_officer:
-            return Student.objects.all()
-        if user.is_parent:
-            return Student.objects.filter(parents=user)
-        return Student.objects.none()
+            queryset = Student.objects.all()
+        elif user.is_parent:
+            queryset = Student.objects.filter(parents=user)
+
+        # Optional query parameters
+        status_param = self.request.query_params.get('status')
+        if status_param and queryset.exists():
+            queryset = queryset.filter(status=status_param)
+
+        return queryset.select_related('room', 'room__dorm').prefetch_related('parents', 'emergency_contacts')
+
+    @action(detail=False, methods=['post'], url_path='bulk-import', permission_classes=[IsAdminOrOfficer])
+    def bulk_import(self, request):
+        """
+        Bulk import students from JSON array of student data.
+        """
+        students_data = request.data.get('students', [])
+        if not isinstance(students_data, list) or len(students_data) == 0:
+            return Response({'error': 'Please provide a non-empty list of students.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        created_count = 0
+        errors = []
+
+        for idx, item in enumerate(students_data):
+            serializer = StudentSerializer(data=item)
+            if serializer.is_valid():
+                serializer.save()
+                created_count += 1
+            else:
+                errors.append({
+                    'row': idx + 1,
+                    'admission_no': item.get('admission_no', 'N/A'),
+                    'errors': serializer.errors
+                })
+
+        return Response({
+            'message': f"Successfully imported {created_count} student(s).",
+            'created_count': created_count,
+            'errors': errors
+        }, status=status.HTTP_201_CREATED if created_count > 0 else status.HTTP_400_BAD_REQUEST)
 
 
 class EmergencyContactViewSet(viewsets.ModelViewSet):

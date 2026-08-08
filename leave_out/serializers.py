@@ -1,5 +1,6 @@
 # leave_out/serializers.py
 from rest_framework import serializers
+from django.utils import timezone
 from .models import LeaveOut, ContactAttempt
 from students.serializers import StudentSerializer
 
@@ -54,14 +55,39 @@ class LeaveOutSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         leave_date = attrs.get('leave_date')
         return_date = attrs.get('return_date')
+        student = attrs.get('student')
         
         # In updates, if one is missing, check from instance
         if not leave_date and self.instance:
             leave_date = self.instance.leave_date
         if not return_date and self.instance:
             return_date = self.instance.return_date
+        if not student and self.instance:
+            student = self.instance.student
+
+        today = timezone.now().date()
+
+        # Validate leave_date is today or in the future when creating a new leave or changing leave_date
+        if leave_date and (not self.instance or 'leave_date' in attrs):
+            if leave_date < today:
+                raise serializers.ValidationError({"leave_date": "Leave date must be today or a future date."})
 
         if leave_date and return_date:
             if return_date < leave_date:
                 raise serializers.ValidationError({"return_date": "Return date cannot be before leave date."})
+
+        # Validate that student does not already have an active/pending leave request
+        if student and (not self.instance or 'student' in attrs):
+            existing_query = LeaveOut.objects.filter(
+                student=student,
+                status__in=['pending', 'approved']
+            )
+            if self.instance:
+                existing_query = existing_query.exclude(pk=self.instance.pk)
+            
+            if existing_query.exists():
+                raise serializers.ValidationError({
+                    "student": "This student already has an active or pending leave request. They cannot hold multiple active leaves simultaneously."
+                })
+
         return attrs

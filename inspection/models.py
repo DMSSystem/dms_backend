@@ -17,6 +17,7 @@ class Inspection(models.Model):
     inspection_date = models.DateTimeField(db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, db_index=True)
     remarks = models.TextField(blank=True)
+    admin_remarks = models.TextField(blank=True, null=True, help_text="Executive remarks/feedback added by Admin.")
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

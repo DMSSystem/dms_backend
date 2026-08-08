@@ -12,6 +12,6 @@ class InspectionSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'room', 'room_details', 'inspected_by',
             'inspected_by_username', 'inspection_date', 'status',
-            'remarks', 'created_at'
+            'remarks', 'admin_remarks', 'created_at'
         ]
         read_only_fields = ['id', 'inspected_by', 'created_at']

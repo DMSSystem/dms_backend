@@ -8,6 +8,14 @@ class Student(models.Model):
     Stores student records including room assignment and emergency contact references.
     Supports multiple parent accounts (e.g. Mother and Father) per student.
     """
+    STATUS_CHOICES = (
+        ('active', 'Active'),
+        ('on_leave', 'On Leave'),
+        ('graduated', 'Graduated'),
+        ('suspended', 'Suspended'),
+        ('eloped', 'Eloped / Missing'),
+    )
+
     full_name = models.CharField(max_length=100)
     admission_no = models.CharField(max_length=50, unique=True, db_index=True)
     room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, related_name='students')
@@ -19,6 +27,7 @@ class Student(models.Model):
     )
     grade = models.CharField(max_length=50, blank=True, null=True)
     stream = models.CharField(max_length=50, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active', db_index=True)
     
     class Meta:
         db_table = 'student'

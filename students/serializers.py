@@ -19,7 +19,10 @@ class EmergencyContactSerializer(serializers.ModelSerializer):
 
     def validate_phone(self, value):
         """Phone must contain only digits, spaces, +, -, parentheses."""
-        cleaned = re.sub(r'[\s\-\(\)\+]', '', value)
+        if not value:
+            return value
+        cleaned_val = str(value).replace('\r', '').replace('\n', '').strip()
+        cleaned = re.sub(r'[\s\-\(\)\+]', '', cleaned_val)
         if not cleaned.isdigit():
             raise serializers.ValidationError(
                 "Phone number must contain only digits (spaces, +, - and parentheses are allowed)."
@@ -28,7 +31,7 @@ class EmergencyContactSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Phone number must be between 7 and 15 digits."
             )
-        return value
+        return cleaned_val
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -47,26 +50,38 @@ class StudentSerializer(serializers.ModelSerializer):
         allow_null=True
     )
     parent_details = serializers.SerializerMethodField()
-    parent_username = serializers.ReadOnlyField(source='parent.username')
-    parent_email = serializers.ReadOnlyField(source='parent.email')
-    parent_phone = serializers.ReadOnlyField(source='parent.phone')
+    parent_username = serializers.SerializerMethodField()
+    parent_email = serializers.SerializerMethodField()
+    parent_phone = serializers.SerializerMethodField()
 
     class Meta:
         model = Student
         fields = [
             'id', 'full_name', 'admission_no', 'room', 'room_details',
             'parents', 'parent', 'parent_details', 'parent_username', 'parent_email', 'parent_phone',
-            'grade', 'stream', 'emergency_contacts', 'active_emergency_contacts'
+            'grade', 'stream', 'status', 'emergency_contacts', 'active_emergency_contacts'
         ]
         read_only_fields = ['id']
 
     def get_active_emergency_contacts(self, instance):
-        contacts = instance.emergency_contacts.filter(is_active=True)
+        contacts = [c for c in instance.emergency_contacts.all() if c.is_active]
         return EmergencyContactSerializer(contacts, many=True).data
 
     def get_parent_details(self, instance):
         parents = instance.parents.all()
         return UserSerializer(parents, many=True).data
+
+    def get_parent_username(self, instance):
+        p = instance.parent
+        return p.username if p else None
+
+    def get_parent_email(self, instance):
+        p = instance.parent
+        return p.email if p else None
+
+    def get_parent_phone(self, instance):
+        p = instance.parent
+        return p.phone if p else None
 
     def validate_full_name(self, value):
         """Full name must only contain letters, spaces, hyphens, and apostrophes."""

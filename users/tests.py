@@ -304,3 +304,31 @@ class UserAPITest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.officer.refresh_from_db()
         self.assertTrue(self.officer.check_password('Reset@9999'))
+
+    def test_bulk_import_users(self):
+        self._auth(self.admin)
+        url = reverse('user-bulk-import')
+        res = self.client.post(url, {
+            'users': [
+                {
+                    'username': 'bulk_user_1',
+                    'email': 'bulk1@dms.com',
+                    'password': 'User1@1234',
+                    'role': 'officer',
+                    'first_name': 'Bulk',
+                    'last_name': 'One'
+                },
+                {
+                    'username': 'bulk_user_2',
+                    'email': 'bulk2@dms.com',
+                    'password': 'User2@1234',
+                    'role': 'parent',
+                    'first_name': 'Bulk',
+                    'last_name': 'Two'
+                }
+            ]
+        }, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.data['created_count'], 2)
+        self.assertTrue(User.objects.filter(username='bulk_user_1').exists())
+        self.assertTrue(User.objects.filter(username='bulk_user_2').exists())

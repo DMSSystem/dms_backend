@@ -211,7 +211,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     Used via Django admin or POST /api/users/ with admin token.
     """
     password = serializers.CharField(write_only=True, required=True)
-    confirm_password = serializers.CharField(write_only=True, required=True)
+    confirm_password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = User
@@ -232,7 +232,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         password = attrs.get('password')
-        confirm = attrs.pop('confirm_password', None)
+        confirm = attrs.pop('confirm_password', password)
         if password != confirm:
             raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
         try:

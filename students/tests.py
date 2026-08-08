@@ -204,3 +204,34 @@ class StudentAPITest(APITestCase):
         self.assertIn('ADM001', admissions)
         self.assertIn('ADM002', admissions)
 
+    def test_bulk_import_students(self):
+        self._auth(self.admin)
+        url = reverse('student-bulk-import')
+        res = self.client.post(url, {
+            'students': [
+                {
+                    'full_name': 'Bulk Student One',
+                    'admission_no': 'BULK001',
+                    'grade': 'Form 1',
+                    'stream': 'Blue',
+                    'emergency_contacts': [
+                        {'name': 'Parent One', 'relationship': 'Father', 'phone': '0711223344'}
+                    ]
+                },
+                {
+                    'full_name': 'Bulk Student Two',
+                    'admission_no': 'BULK002',
+                    'grade': 'Form 2',
+                    'stream': 'Red',
+                    'emergency_contacts': [
+                        {'name': 'Parent Two', 'relationship': 'Mother', 'phone': '0755667788'}
+                    ]
+                }
+            ]
+        }, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.data['created_count'], 2)
+        self.assertTrue(Student.objects.filter(admission_no='BULK001').exists())
+        self.assertTrue(Student.objects.filter(admission_no='BULK002').exists())
+
+
