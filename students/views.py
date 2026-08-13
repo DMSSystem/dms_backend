@@ -126,5 +126,7 @@ class StudentsByRoomView(generics.ListAPIView):
         if user.is_admin or user.is_officer:
             return Student.objects.filter(room_id=room_id)
         elif user.is_parent:
-            return Student.objects.filter(room_id=room_id, parents=user)
+            if Student.objects.filter(room_id=room_id, parents=user).exists():
+                return Student.objects.filter(room_id=room_id)
+            return Student.objects.none()
         return Student.objects.none()

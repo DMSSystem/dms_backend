@@ -128,9 +128,9 @@ class LeaveOutViewSet(viewsets.ModelViewSet):
                     f"Student Leave-Out Status Update: {new_status.capitalize()}",
                     f"This is to notify you that the leave-out request for "
                     f"{student.full_name} (Adm: {student.admission_no}), from {leave_out.leave_date} "
-                    f"to {leave_out.return_date} is now marked as {new_status.upper()}.\n\n"
+                    f"to {leave_out.return_date} is now marked as {new_status.upper()}\n\n"
                     f"Reason for request: {leave_out.reason}\n\n"
-                    f"Best regards,\n"
+                    f"Best regards,\n\n"
                     f"Dormitory Management System",
                     "noreply@dms.com",
                     parent_emails,
@@ -142,7 +142,6 @@ class LeaveOutViewSet(viewsets.ModelViewSet):
                     f"to {', '.join(parent_emails)}: {str(e)}",
                     exc_info=True
                 )
-                
         serializer = self.get_serializer(leave_out)
         return Response(serializer.data)
 
